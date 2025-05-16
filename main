@@ -1,0 +1,26 @@
+// src/app.ts
+import express from 'express';
+import bodyParser from 'body-parser';
+import ticketsRouter from './routes/tickets.routes';
+import sequelize from './config/database';
+import { errorMiddleware } from './middlewares/error.middleware';
+
+const app = express();
+
+app.use(bodyParser.json());
+app.use('/tickets', ticketsRouter);
+app.use(errorMiddleware);
+
+sequelize.sync().then(() => {
+  console.log('Database synced');
+});
+
+export { app };
+
+// src/server.ts
+import { app } from './app';
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
