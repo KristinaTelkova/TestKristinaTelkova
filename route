@@ -1,0 +1,15 @@
+// src/routes/tickets.routes.ts
+import { Router } from 'express';
+import { TicketsController } from '../controllers/tickets.controller';
+
+const router = Router();
+const ticketsController = new TicketsController();
+
+router.post('/', ticketsController.createTicket);
+router.patch('/:id/start', ticketsController.startTicket);
+router.patch('/:id/complete', ticketsController.completeTicket);
+router.patch('/:id/cancel', ticketsController.cancelTicket);
+router.get('/', ticketsController.getTickets);
+router.post('/cancel-all-in-progress', ticketsController.cancelAllInProgress);
+
+export default router;
