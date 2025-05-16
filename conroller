@@ -1,0 +1,79 @@
+// src/controllers/tickets.controller.ts
+import { Request, Response } from 'express';
+import { TicketsService } from '../services/tickets.service';
+import { ITicket } from '../interfaces/ticket.interface';
+
+export class TicketsController {
+  private ticketsService = new TicketsService();
+
+  public createTicket = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const ticketData: ITicket = {
+        subject: req.body.subject,
+        message: req.body.message,
+        status: 'Новое',
+      };
+
+      const newTicket = await this.ticketsService.createTicket(ticketData);
+      res.status(201).json(newTicket);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+  public startTicket = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedTicket = await this.ticketsService.startTicket(id);
+      res.status(200).json(updatedTicket);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+
+  public completeTicket = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      const resolution = req.body.resolution;
+      const updatedTicket = await this.ticketsService.completeTicket(id, resolution);
+      res.status(200).json(updatedTicket);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+
+  public cancelTicket = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      const cancellationReason = req.body.cancellationReason;
+      const updatedTicket = await this.ticketsService.cancelTicket(id, cancellationReason);
+      res.status(200).json(updatedTicket);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  };
+
+  public getTickets = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { date, startDate, endDate } = req.query;
+      const tickets = await this.ticketsService.getTickets(
+        date as string,
+        startDate as string,
+        endDate as string
+      );
+      res.status(200).json(tickets);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+  public cancelAllInProgress = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const cancellationReason = req.body.cancellationReason;
+      const affectedCount = await this.ticketsService.cancelAllInProgress(cancellationReason);
+      res.status(200).json({ message: `${affectedCount} tickets canceled` });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+}
