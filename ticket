@@ -1,0 +1,50 @@
+// src/interfaces/ticket.interface.ts
+export interface ITicket {
+  id?: number;
+  subject: string;
+  message: string;
+  status: 'Новое' | 'В работе' | 'Завершено' | 'Отменено';
+  resolution?: string;
+  cancellationReason?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// src/models/ticket.model.ts
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
+
+@Table({
+  timestamps: true,
+  tableName: 'tickets',
+})
+export class Ticket extends Model {
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  subject!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  message!: string;
+
+  @Column({
+    type: DataType.ENUM('Новое', 'В работе', 'Завершено', 'Отменено'),
+    defaultValue: 'Новое',
+  })
+  status!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  resolution?: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  cancellationReason?: string;
+}
