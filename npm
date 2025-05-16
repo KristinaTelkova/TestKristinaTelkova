@@ -1,0 +1,4 @@
+npm init -y
+npm install express typescript ts-node @types/node @types/express --save-dev
+npm install sequelize sequelize-typescript sqlite3
+npm install body-parser
