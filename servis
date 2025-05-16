@@ -1,0 +1,82 @@
+// src/services/tickets.service.ts
+import { Ticket } from '../models/ticket.model';
+import { ITicket } from '../interfaces/ticket.interface';
+import { Op } from 'sequelize';
+
+export class TicketsService {
+  public async createTicket(ticketData: ITicket): Promise<Ticket> {
+    return await Ticket.create(ticketData);
+  }
+
+  public async startTicket(id: number): Promise<Ticket> {
+    const ticket = await Ticket.findByPk(id);
+    if (!ticket) throw new Error('Ticket not found');
+    if (ticket.status !== 'Новое') throw new Error('Ticket cannot be started');
+
+    ticket.status = 'В работе';
+    return await ticket.save();
+  }
+
+  public async completeTicket(id: number, resolution: string): Promise<Ticket> {
+    const ticket = await Ticket.findByPk(id);
+    if (!ticket) throw new Error('Ticket not found');
+    if (ticket.status !== 'В работе') throw new Error('Ticket cannot be completed');
+
+    ticket.status = 'Завершено';
+    ticket.resolution = resolution;
+    return await ticket.save();
+  }
+
+  public async cancelTicket(id: number, cancellationReason: string): Promise<Ticket> {
+    const ticket = await Ticket.findByPk(id);
+    if (!ticket) throw new Error('Ticket not found');
+    if (ticket.status === 'Завершено') throw new Error('Completed ticket cannot be canceled');
+
+    ticket.status = 'Отменено';
+    ticket.cancellationReason = cancellationReason;
+    return await ticket.save();
+  }
+
+  public async getTickets(date?: string, startDate?: string, endDate?: string): Promise<Ticket[]> {
+    const where: any = {};
+
+    if (date) {
+      const start = new Date(date);
+      const end = new Date(date);
+      end.setDate(end.getDate() + 1);
+
+      where.createdAt = {
+        [Op.gte]: start,
+        [Op.lt]: end,
+      };
+    }
+
+    if (startDate && endDate) {
+      where.createdAt = {
+        [Op.gte]: new Date(startDate),
+        [Op.lte]: new Date(endDate),
+      };
+    }
+
+    return await Ticket.findAll({
+      where,
+      order: [['createdAt', 'DESC']],
+    });
+  }
+
+  public async cancelAllInProgress(cancellationReason: string): Promise<number> {
+    const [affectedCount] = await Ticket.update(
+      {
+        status: 'Отменено',
+        cancellationReason,
+      },
+      {
+        where: {
+          status: 'В работе',
+        },
+      }
+    );
+
+    return affectedCount;
+  }
+}
